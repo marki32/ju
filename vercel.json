@@ -6,15 +6,15 @@
             "use": "@vercel/python"
         }
     ],
+    "functions": {
+        "api/*.py": {
+            "maxDuration": 60
+        }
+    },
     "routes": [
         {
             "src": "/(.*)",
-            "dest": "app.py"
+            "dest": "/api/app.py"
         }
-    ],
-    "functions": {
-        "app.py": {
-            "maxDuration": 60
-        }
-    }
+    ]
 }
