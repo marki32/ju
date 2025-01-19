@@ -23,19 +23,29 @@ def download_audio(url):
             'preferredquality': '192',
         }],
         'prefer_ffmpeg': True,
-        'keepvideo': False
+        'keepvideo': False,
+        'max_filesize': 50 * 1024 * 1024,  # 50MB max
+        'match_filter': lambda info: None if info.get('duration', 0) < 600 else 'Video too long'
     }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        info = ydl.extract_info(url, download=True)
-        title = info.get('title', 'video')
-        sanitized_title = sanitize_filename(title)
-        filename = f"{sanitized_title}.mp3"
-        return {
-            'status': 'success',
-            'title': title,
-            'filename': filename
-        }
+        try:
+            info = ydl.extract_info(url, download=True)
+            title = info.get('title', 'video')
+            sanitized_title = sanitize_filename(title)
+            filename = f"{sanitized_title}.mp3"
+            return {
+                'status': 'success',
+                'title': title,
+                'filename': filename
+            }
+        except Exception as e:
+            error_message = str(e)
+            if 'Video too long' in error_message:
+                raise Exception('Video must be under 10 minutes for Vercel deployment')
+            elif 'max_filesize' in error_message:
+                raise Exception('File size must be under 50MB for Vercel deployment')
+            raise e
 
 @app.route('/')
 def home():
